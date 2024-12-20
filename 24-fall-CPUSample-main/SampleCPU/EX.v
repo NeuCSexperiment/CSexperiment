@@ -12,7 +12,7 @@ module EX(
     output wire data_sram_en,
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
-    output wire [31:0] data_sram_wdata
+    output wire [31:0] data_sram_wdata,
 
     //data correlation,modify!
     output wire [`EX_TO_MEM_WD-1:0] ex_to_id_bus,
