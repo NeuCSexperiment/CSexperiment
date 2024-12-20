@@ -13,6 +13,14 @@ module EX(
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata
+
+    //data correlation,modify!
+    output wire [`EX_TO_MEM_WD-1:0] ex_to_id_bus,
+
+    //stall,modify!
+    output wire stallreq_for_ex,
+
+    output wire stall_en    //to id
 );
 
     reg [`ID_TO_EX_WD-1:0] id_to_ex_bus_r;
@@ -83,7 +91,32 @@ module EX(
 
     assign ex_result = alu_result;
 
+    //load and store instructions,modify!
+    assign stall_en = data_ram_en;   //tell "id" to stall if this instruction is a load or store
+
+    assign data_sram_en = data_ram_en;
+    assign data_sram_wen = (data_ram_wen == 4'b0) ? 4'b0 : 4'b1;    //4'b0 lw;  4'b1 sw. This formula is easier to read.
+    assign data_sram_addr = alu_result;
+    assign data_sram_wdata = 32'b0;
+
+    //
+
+    //stall part start,modify!
+    assign stallreq_for_ex = `NoStop;
+
+    //stall part end
+
     assign ex_to_mem_bus = {
+        ex_pc,          // 75:44
+        data_ram_en,    // 43
+        data_ram_wen,   // 42:39
+        sel_rf_res,     // 38
+        rf_we,          // 37
+        rf_waddr,       // 36:32
+        ex_result       // 31:0
+    };
+
+    assign ex_to_id_bus = {//modify!
         ex_pc,          // 75:44
         data_ram_en,    // 43
         data_ram_wen,   // 42:39

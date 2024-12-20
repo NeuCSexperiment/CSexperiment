@@ -9,6 +9,9 @@ module MEM(
     input wire [31:0] data_sram_rdata,
 
     output wire [`MEM_TO_WB_WD-1:0] mem_to_wb_bus
+
+    //data correlation,modify!
+    output wire [`MEM_TO_WB_WD-1:0] mem_to_id_bus
 );
 
     reg [`EX_TO_MEM_WD-1:0] ex_to_mem_bus_r;
@@ -48,7 +51,7 @@ module MEM(
         ex_result       // 31:0
     } =  ex_to_mem_bus_r;
 
-
+    assign mem_result = data_sram_rdata;//modify!
 
     assign rf_wdata = sel_rf_res ? mem_result : ex_result;
 
@@ -59,7 +62,12 @@ module MEM(
         rf_wdata    // 31:0
     };
 
-
+    assign mem_to_id_bus = {//modify!
+        mem_pc,    //41:38
+        rf_we,     //37
+        rf_waddr,  //36:32
+        rf_wdata   //31:0
+    };
 
 
 endmodule
