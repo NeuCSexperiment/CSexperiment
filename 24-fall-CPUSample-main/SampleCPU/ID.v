@@ -7,7 +7,7 @@ module ID(
     
     output wire stallreq,
 
-    input wire [`IF_TO_ID_WD-1:0] if_to_id_bus,
+    input wire [`IF_TO_ID_WD-1:0] if_to_id_bus,//包含当前 PC 和指令等信息
 
     input wire [31:0] inst_sram_rdata,
 
@@ -15,7 +15,15 @@ module ID(
 
     output wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
 
-    output wire [`BR_WD-1:0] br_bus 
+    output wire [`BR_WD-1:0] br_bus ,
+    //数据前递 modify
+    input wire [`EX_TO_MEM_WD-1:0] ex_to_id_bus,  //ex-->id
+
+    input wire [`MEM_TO_WB_WD-1:0] mem_to_id_bus,  //mem-->id
+
+    input wire [`WB_TO_RF_WD-1:0] wb_to_id_bus,  //wb-->id
+
+    input wire stall_en
 );
 
     reg [`IF_TO_ID_WD-1:0] if_to_id_bus_r;
@@ -26,19 +34,27 @@ module ID(
     wire wb_rf_we;
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
-
+    
+    //reg if_id_stop;//modify1
     always @ (posedge clk) begin
         if (rst) begin
-            if_to_id_bus_r <= `IF_TO_ID_WD'b0;        
+            if_to_id_bus_r <= `IF_TO_ID_WD'b0;
+            //if_id_stop <= 1'b0;//modify1        
         end
         // else if (flush) begin
         //     ic_to_id_bus <= `IC_TO_ID_WD'b0;
         // end
+
+        //stall  1.id   2.ex
         else if (stall[1]==`Stop && stall[2]==`NoStop) begin
             if_to_id_bus_r <= `IF_TO_ID_WD'b0;
+            //if_id_stop <= 1'b0;//modify1
         end
         else if (stall[1]==`NoStop) begin
             if_to_id_bus_r <= if_to_id_bus;
+        end
+        else if(stall[2] == `Stop) begin
+            //if_id_stop <= 1'b1;modify
         end
     end
     
